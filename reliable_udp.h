@@ -68,11 +68,12 @@ int RECV(int sockfd, void *buf, int len, int flags)
 // Simply send data following the control byte
 int SEND(int sockfd, const void *msg, int len, int flags)
 {
-	usleep(10*1000);   // Helps prevent buffer overrun 
+	//usleep(20*1000);   // Helps prevent buffer overrun 
 	char buffer[MSS + 1] = "S";
 	memcpy(buffer + 1, msg, len);
 	int sent_bytes = sendto(tcpd_sockfd, buffer, len + 1, flags, (struct sockaddr *)&tcpd_addr, tcpd_addr_len);
-	return sent_bytes - 1; // Since it includes the extra control byte
+	int recv_bytes = recvfrom(tcpd_sockfd, buffer, len, flags, (struct sockaddr *)&tcpd_addr, &tcpd_addr_len);  //TCPD received ACK, unblock
+	return recv_bytes; // Since it includes the extra control byte
 }
 
 // Close the socket

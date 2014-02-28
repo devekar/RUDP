@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 {
     int in_sockfd, out_sockfd, recv_sockfd;
 	int in_addr_len, out_addr_len, recv_addr_len;
-    struct sockaddr_in in_addr, out_addr, recv_addr;
+    struct sockaddr_in in_addr, out_addr, recv_addr;   
 	char buffer[MSS + 1];
 	int recv_bytes, sent_bytes, buflen;
 	
@@ -83,6 +83,8 @@ int main(int argc, char *argv[])
 	recv_addr_len = sizeof(recv_addr);	
 	
 	
+	// TODO: remove error checking for local sockets, they should be reliable?
+	
 	while(1) {
 		// wait for message from local user process
 		recv_bytes = recvfrom(in_sockfd, buffer, MSS + 1, 0, (struct sockaddr *)&in_addr, &in_addr_len);
@@ -100,12 +102,24 @@ int main(int argc, char *argv[])
 			case 'S':   //Send data to troll excluding control byte
 				sent_bytes = sendto(out_sockfd, buffer + 1, recv_bytes - 1, 0, (struct sockaddr *)&out_addr, out_addr_len);
 				if(sent_bytes < recv_bytes - 1) error("sending packet to troll");
-				printf("TCPD sends %d bytes\n", recv_bytes - 1);
+				
+				// Get ACK from server
+				recv_bytes = recvfrom(recv_sockfd, buffer, MSS, 0, (struct sockaddr *)&recv_addr, &recv_addr_len);
+				if(recv_bytes < 0) error("receiving ACK");
+
+				// Unblock sender
+				sent_bytes = sendto(in_sockfd, buffer, recv_bytes, 0, (struct sockaddr *)&in_addr, in_addr_len);
+				if(sent_bytes < recv_bytes) error("sending received message to user");				
+				printf("TCPD sent %d bytes\n", sent_bytes);
 				break;
 				
 			case 'R':  // User says we will receive data from remote host
 				recv_bytes = recvfrom(recv_sockfd, buffer, MSS, 0, (struct sockaddr *)&recv_addr, &recv_addr_len);
 				if(recv_bytes < 0) error("receiving packet from remote host");
+				
+				//Send ACK to client(send back the received data to troll)
+				sent_bytes = sendto(out_sockfd, buffer , recv_bytes, 0, (struct sockaddr *)&out_addr, out_addr_len);
+				if(sent_bytes < recv_bytes - 1) error("sending ACK to troll");
 				
 				// Send data to local user process
 				sent_bytes = sendto(in_sockfd, buffer, recv_bytes, 0, (struct sockaddr *)&in_addr, in_addr_len);

@@ -6,23 +6,25 @@ How to run program
 CLIENT END: gamma
 SERVER END: beta
 
-1) Open 5 terminals, ssh via 3 to gamma and via remaining 2 to beta
+1) Open 6 ssh terminals, 3 for gamma and other 3 for beta.
 2) Execute make on any terminal to compile:
    make
-3) On one beta terminal, execute:
+3) Run troll on a beta and a gamma terminal:
+   On beta: make server_troll
+   On gamma: make client_troll
+   
+4) Run tcpd on a beta and a gamma terminal:
    make run_tcpd
 	
-   On second beta terminal, execute:
+5) Run ftps on beta:
    make run_ftps
    
-4) On first gamma terminal, execute:
-   make run_troll
-	
-   On second gamma terminal, execute:
-   make run_tcpd
-   
-   On third gamma terminal, execute:
-   make run_ftpc file=FILE_TO_BE_SENT
+   Run ftpc on gamma:
+   make run_ftpc
+   OR
+   make run_ftpc file=<FILE_TO_BE_SENT>
+
+
 
       
 Packet format for IPC between user process and TCPD
@@ -58,13 +60,3 @@ TCPD creates 3 sockets, one for communicating with user process(ftpc/ftps), one 
 4) global.h
 It defines the constants such as port numbers and MSS. Used by tcpd.c and user_tcp.h .
 
-
-Files
------
-1) ftpc.c
-2) ftps.c
-3) tcpd.c
-4) user_tcp.h
-5) global.h
-6) troll
-7) Makefile
