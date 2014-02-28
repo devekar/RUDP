@@ -1,4 +1,0 @@
-RUDP
-====
-
-Reliable UDP

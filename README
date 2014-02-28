@@ -1,0 +1,70 @@
+devekar.1@osu.edu
+
+
+How to run program
+------------------
+CLIENT END: gamma
+SERVER END: beta
+
+1) Open 5 terminals, ssh via 3 to gamma and via remaining 2 to beta
+2) Execute make on any terminal to compile:
+   make
+3) On one beta terminal, execute:
+   make run_tcpd
+	
+   On second beta terminal, execute:
+   make run_ftps
+   
+4) On first gamma terminal, execute:
+   make run_troll
+	
+   On second gamma terminal, execute:
+   make run_tcpd
+   
+   On third gamma terminal, execute:
+   make run_ftpc file=FILE_TO_BE_SENT
+
+      
+Packet format for IPC between user process and TCPD
+---------------------------------------------------
+Control byte + Optional data
+
+Control byte:
+X: SOCKET
+S: SEND
+R: RECEIVE
+B: BIND
+L: LISTEN
+A: ACCEPT
+C: CONNECT
+Y: CLOSE
+
+
+Description
+-------
+1) ftpc.c ftps.c
+These files remain the same as in lab1 except for 2 changes: a include header statement for user_tcp.h and all the socket related functions are capitalized to refer the functions defined in user_tcp.h .
+
+2) user_tcp.h
+It defines the SOCKET, SEND, RECV and CLOSE functions. It communicates with the local TCPD using UDP. To help distinguish between function calls, the first byte of any packet send to TCPD defines the function. We call this the control byte. 
+SOCKET(): Create socket for communication with TCPD and test if connection works by sending a single byte 'X'. We expect TCPD send back the byte.
+SEND(): Construct packet with control byte 'S' followed by the data and send it to TCPD. Sleeps for 10 ms to prevent buffer overrun.
+RECV(): Send control byte 'R' to TCPD so that it can wait for packet from remote host. We expect TCPD to send the received data.
+CLOSE(): Close the socket used for communication with TCPD.
+
+3) tcpd.c
+TCPD creates 3 sockets, one for communicating with user process(ftpc/ftps), one for sending data to troll and one for receiving data from remote host. It then runs in a loop waiting for packet from user process. Depending on control byte, it executes switch-case to perform specific actions as explained before.
+
+4) global.h
+It defines the constants such as port numbers and MSS. Used by tcpd.c and user_tcp.h .
+
+
+Files
+-----
+1) ftpc.c
+2) ftps.c
+3) tcpd.c
+4) user_tcp.h
+5) global.h
+6) troll
+7) Makefile
