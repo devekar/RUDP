@@ -9,10 +9,10 @@
 
 
 
-#include "reliable_udp.h"
+#include "user_library.h"
 
 
-#define CHUNK_SIZE 512
+#define CHUNK_SIZE 1000
 #define FILESIZE_SIZE 4
 #define FILENAME_SIZE 20
 
@@ -82,7 +82,8 @@ void send_file(char filename[], int sockfd)
             sent_bytes = SEND(sockfd, file_buf, read_bytes, 0);
             if(sent_bytes < read_bytes) error("ERROR writing to socket"); 
             total_bytes += sent_bytes;
-			printf("Total bytes: %d\n", total_bytes);
+			printf("\rTotal bytes: %d", total_bytes);
+			fflush(stdout);
     }
 	fclose(f);
 	

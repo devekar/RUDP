@@ -7,10 +7,10 @@
 #include <netinet/in.h>
 
 
-#include "reliable_udp.h"
+#include "user_library.h"
 
 
-#define CHUNK_SIZE 512
+#define CHUNK_SIZE 1000
 #define FILESIZE_SIZE 4
 #define FILENAME_SIZE 20
 #define SERVER_DIR_PATH "server_dir/"
@@ -53,7 +53,8 @@ void receive_file(char file_path[], int filesize, int newsockfd)
 	  if ( (recv_bytes = RECV(newsockfd,file_buf,CHUNK_SIZE, 0)) > 0) {
 			fwrite(file_buf, sizeof(char), recv_bytes, f);
 			total_bytes += recv_bytes;
-			printf("Total bytes: %d\n", total_bytes);
+			printf("\rTotal bytes: %d", total_bytes);
+			fflush(stdout);
 	  }
 	  else printf("\nError: Did not receive data. Retrying...\n");
 	}

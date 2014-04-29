@@ -1,34 +1,41 @@
 client := gamma
 server := beta
-tcpd_in_port := 5555
+tcpd_in_port := 5554
 tcpd_out_port := 5556
 troll_in_port := 5557
 tcpd_recv_port := 5558
 file := 1.jpg
+ccpp = g++ -std=c++0x
+cc = gcc
 
 all:
-	gcc ftps.c -o ftps
-	gcc ftpc.c -o ftpc
-	gcc tcpd.c -o tcpd
+	$(cc) ftps.c -o ftps
+	$(cc) ftpc.c -o ftpc
+	$(ccpp) tcpd.cpp tcp.cpp delta-timer/functions.cpp -o tcpd
+	make -C delta-timer
 	mkdir server_dir
 	
-client_troll:
-	troll -C $(server) -S localhost -a $(tcpd_recv_port) -b $(tcpd_out_port) -x 0 -g 0 -l 0 -m 0 -r -c 10000 $(troll_in_port)
+CTROLL:
+	troll -C $(server) -S localhost -a $(tcpd_recv_port) -b $(tcpd_out_port) -c 10000 $(troll_in_port) -t -x 25 -m 25 -g 25
 
-server_troll:
-	troll -C $(client) -S localhost -a $(tcpd_recv_port) -b $(tcpd_out_port) -x 0 -g 0 -l 0 -m 0 -r -c 10000 $(troll_in_port)
+STROLL:
+	troll -C $(client) -S localhost -a $(tcpd_recv_port) -b $(tcpd_out_port) -c 10000 $(troll_in_port) -t -x 25 -m 25 -g 25
 
-run_tcpd:
+TCPD:
 	tcpd
 
-run_ftps:
+FTPS:
 	ftps 3333
 
-run_ftpc:
+FTPC:
 	ftpc localhost 3333 $(file)
 
+TIMER:
+	delta-timer/timer
+	
 clean:
 	rm -rf ftpc ftps tcpd
+	make clean -C delta-timer
 	rm -rf server_dir/*
 	rmdir server_dir
 	

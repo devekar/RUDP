@@ -1,0 +1,22 @@
+To build: make all
+To clean: make clean
+
+To run (preferably in two different terminals and in this order):
+timer
+timer-test
+
+
+
+File descriptions:
+
+delta-list.h contains implementation of delta-list using a sorted linked list.
+
+functions.h and functions.cpp contain helper functions with error handling
+
+types.h contain common type definitions.
+
+timer-client.h contains information required by a process to use the timer process.
+
+timer.h and timer.cpp implement the timer. The timer runs in a loop. Each iteration of the loop is called a tick and happens once every few constant ms. Every tick cycle, the tick count of the head of the delta list is decremented. Once the count reaches 0, a message is sent to the output port the head moves on. We also check for pending requests once every tick.
+
+timer-test contains the driver program which sends pre-defined timeout values to the timer process. These test values can be modified and the timer would still continue to work correctly.

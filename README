@@ -1,62 +1,56 @@
-devekar.1@osu.edu
-
+Vaibhav Devekar(devekar.1@osu.edu)
+Gaurav Soni
 
 How to run program
 ------------------
-CLIENT END: gamma
-SERVER END: beta
-
-1) Open 6 ssh terminals, 3 for gamma and other 3 for beta.
-2) Execute make on any terminal to compile:
-   make
-3) Run troll on a beta and a gamma terminal:
-   On beta: make server_troll
-   On gamma: make client_troll
-   
-4) Run tcpd on a beta and a gamma terminal:
-   make run_tcpd
-	
-5) Run ftps on beta:
-   make run_ftps
-   
-   Run ftpc on gamma:
-   make run_ftpc
-   OR
-   make run_ftpc file=<FILE_TO_BE_SENT>
+...
 
 
 
-      
-Packet format for IPC between user process and TCPD
----------------------------------------------------
-Control byte + Optional data
+FILE DESCRIPTIONS
+-----------------
 
-Control byte:
-X: SOCKET
-S: SEND
-R: RECEIVE
-B: BIND
-L: LISTEN
-A: ACCEPT
-C: CONNECT
-Y: CLOSE
+user_library.h
+Contains the interface to the TCP daemon for use by client programs ftpc and ftps.
+
+ftps.c
+Contains the program for server which accepts a file and saves it to a particular location.
+
+ftpc.c
+Contains the program for client which sends a file from a particular location.
 
 
-Description
--------
-1) ftpc.c ftps.c
-These files remain the same as in lab1 except for 2 changes: a include header statement for user_tcp.h and all the socket related functions are capitalized to refer the functions defined in user_tcp.h .
+tcp.h & tcp.cpp 
+Contains TCP packet structure and helper methods for creating and working with packets.       
 
-2) user_tcp.h
-It defines the SOCKET, SEND, RECV and CLOSE functions. It communicates with the local TCPD using UDP. To help distinguish between function calls, the first byte of any packet send to TCPD defines the function. We call this the control byte. 
-SOCKET(): Create socket for communication with TCPD and test if connection works by sending a single byte 'X'. We expect TCPD send back the byte.
-SEND(): Construct packet with control byte 'S' followed by the data and send it to TCPD. Sleeps for 10 ms to prevent buffer overrun.
-RECV(): Send control byte 'R' to TCPD so that it can wait for packet from remote host. We expect TCPD to send the received data.
-CLOSE(): Close the socket used for communication with TCPD.
 
-3) tcpd.c
-TCPD creates 3 sockets, one for communicating with user process(ftpc/ftps), one for sending data to troll and one for receiving data from remote host. It then runs in a loop waiting for packet from user process. Depending on control byte, it executes switch-case to perform specific actions as explained before.
+tcpd.cpp  
+Contains the code for the TCP daemon. It contains code for interacting with client processes, timer, peer daemon, sending and receiving data and connection shutdown.
 
-4) global.h
-It defines the constants such as port numbers and MSS. Used by tcpd.c and user_tcp.h .
+buffer.h sendbuffer.h recvbuffer.h
+These files implement the buffer and window management used by tcpd.
 
+constants.h types.h    
+Contain common constant and type definitions.
+
+timeoutCalculator.h  
+Contains code for calculating RTO using Jacobson's algorithm used by tcpd.
+
+
+delta-list\
+Folder containing the timer implementation and associated files.
+
+delta-list\delta-list.h 
+Contains implementation of delta-list using a sorted linked list.
+
+delta-list\functions.h and delta-list\functions.cpp
+Contain helper functions with error handling
+
+delta-list\types.h 
+Contain common type definitions.
+
+delta-list\timer-client.h 
+Contains information required by a process to use the timer process.
+
+delta-list\timer.h and timer.cpp
+These files implement the timer. The timer runs in a loop. Each iteration of the loop is called a tick and happens once every few constant ms. Every tick cycle, the tick count of the head of the delta list is decremented. Once the count reaches 0, a message is sent to the output port the head moves on. We also check for pending requests once every tick.
